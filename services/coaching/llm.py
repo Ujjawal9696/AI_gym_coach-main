@@ -19,14 +19,33 @@ class LLMCoach:
             {"role": "user", "content": prompt}
         ]
 
-        response = self.client.chat.completions.create(
-            model="llama-3.3-70b-versatile",
-            messages=messages,
-            temperature=0.4,
-        )
+        try:
+            response = self.client.chat.completions.create(
+                model="llama-3.3-70b-versatile",
+                messages=messages,
+                temperature=0.4,
+            )
 
-        text = response.choices[0].message.content.strip()
-        self.history.append({"role": "assistant", "content": text})
+            text = response.choices[0].message.content.strip()
 
-        return text
-    
+            self.history.append({
+                "role": "assistant",
+                "content": text
+            })
+
+            return text
+
+        except Exception as e:
+            print(f"Groq API Error: {e}")
+
+            # Fallback feedback
+            if issue:
+                return f"Please correct your form: {issue}"
+            
+            if event == "workout_started":
+                return "Workout started. Keep your form controlled."
+
+            if event == "workout_completed":
+                return "Great workout! Good job."
+
+            return "Keep going and maintain proper form."
